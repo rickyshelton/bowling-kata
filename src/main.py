@@ -1,11 +1,13 @@
 from enum import Enum, auto
 from dataclasses import dataclass
 
+
 class FrameType(Enum):
     NORMAL = auto()
     STRIKE = auto()
     SPARE = auto()
     FINAL = auto()
+
 
 @dataclass
 class Frame:
@@ -16,6 +18,7 @@ class Frame:
 
     def score(self):
         return self.first_roll_score + self.second_roll_score + self.third_roll_score
+
 
 def parse_frame_string(frame_string, is_final_frame):
     frame_type = None
@@ -32,14 +35,16 @@ def parse_frame_string(frame_string, is_final_frame):
         else:
             frame_type = FrameType.NORMAL
             roll_scores[roll_index] = int(roll)
-    
+
     if is_final_frame:
         frame_type = FrameType.FINAL
 
     return Frame(frame_type, roll_scores[0], roll_scores[1], roll_scores[2])
 
-def get_spare_bonus(frame):
-    return frame.first_roll_score
+
+def get_spare_bonus(next_frame):
+    return next_frame.first_roll_score
+
 
 def get_strike_bonus(next_frame, second_next_frame):
     bonus = 0
@@ -49,6 +54,7 @@ def get_strike_bonus(next_frame, second_next_frame):
     else:
         bonus += next_frame.first_roll_score + next_frame.second_roll_score
     return bonus
+
 
 def get_score(game):
     total_score = 0
@@ -64,7 +70,6 @@ def get_score(game):
 
     # iterate over frames list and get scores
     for frame_index, frame in enumerate(frames_list):
-
         total_score += frame.score()
 
         if frame.type == FrameType.SPARE:
@@ -73,8 +78,12 @@ def get_score(game):
 
         if frame.type == FrameType.STRIKE:
             next_frame = frames_list[frame_index + 1]
-            second_next_frame = frames_list[frame_index + 2] if next_frame.type == FrameType.STRIKE else None
-            
+            second_next_frame = (
+                frames_list[frame_index + 2]
+                if next_frame.type == FrameType.STRIKE
+                else None
+            )
+
             total_score += get_strike_bonus(next_frame, second_next_frame)
 
     return total_score
